@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling >= 1.26"]
+build-backend = "hatchling.build"
+[project]
+name = "eesyapi"
+version = "0.0.1"
+authors = [
+  { name="Rich Bielby", email="richard.bielby@education.gov.uk" },
+]
+description = "This package provides functionality to help users connect to the UK Department for Education's Explore education statistics (EES) API data service."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL-3.0"
+license-files = ["LICENSE*"]
+
+[project.urls]
+Homepage = "https://github.com/dfe-analytical-services/eesyapi.py"
+Issues = "https://github.com/dfe-analytical-services/eesyapi.py/issues"
