@@ -35,6 +35,32 @@ def convert_api_filter_type(filter_type):
 
     return mapping.get(filter_type)
 
+#check response
+
+def check_response(response):
+    if response.status_code != 200:
+        raise Exception(
+            f"API Error: {response.status_code} - {response.text}"
+        )
+
+
+#Extract Results
+
+def extract_results(data):
+    """
+    Extract results safely from API response
+    """
+
+    if not isinstance(data, dict):
+        return[]
+    
+    if "results" in data:
+        return data["results"]
+    
+    return[]
+    
+
+
 #Main Function 
 
 def parse_tourl_filter_in(items, filter_type):
