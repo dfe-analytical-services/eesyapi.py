@@ -15,6 +15,7 @@ def api_url(
     indicators = None, 
     time_periods = None, 
     geographic_levels = None,
+    ees_enivronment=None,
     locations = None, 
     filter_items = None, 
     dataset_version = None, 
@@ -22,7 +23,9 @@ def api_url(
     api_version = None, 
     page_size = None, 
     page = None, 
-    verbose = False ):
+    verbose = False 
+
+):
         
 #Default Values
 
@@ -34,14 +37,14 @@ def api_url(
 
 #Base URL
 
-    _base_urls = {
+    base_urls = {
         "dev": "https://pp-api.education.gov.uk/statistics-dev/", 
         "test": "https://pp-api.education.gov.uk/statistics-test/", 
         "preprod": "https://pp-api.education.gov.uk/statistics-preprod/", 
         "prod": "https://api.education.gov.uk/statistics/"
-    }
+     }
 
-    base = _base_urls[ees_environment] + "v" + api_version + "/"
+    base = base_urls[ees_environment] + "v" + api_version + "/"
 
 #Get Publications 
 
@@ -156,11 +159,4 @@ def api_url(
          print("Generated URL:")
          print(url)
     return url 
-
-
-# print(api_url())
-print(api_url(
-    endpoint="get-data-catalogue", 
-    publication_id="8b7474f9-5870-4ecc-7557-08da5f64dcf1",
-    filter_items="Absence reason"
-))
+              
