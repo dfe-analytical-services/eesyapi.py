@@ -89,4 +89,4 @@ def get_data_catalogue(
 
     warning_max_pages(data)
 
-    return data.get("rsults", []) 
+    return data.get("results", []) 
