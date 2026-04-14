@@ -1,10 +1,10 @@
-from api_url import api_url
+
 import requests
 from typing import Dict, Any, List, Optional 
 
-from api_url import api_url 
-from utils import check_response, extract_results
-from convert_api_filter_type import convert_api_filter_type
+from .api_url import api_url 
+from .utils import check_response, extract_results
+from .convert_api_filter_type import convert_api_filter_type
 
 def build_query_body(
         indicators: Optional[List[str]] = None, 

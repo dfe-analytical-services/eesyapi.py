@@ -1,4 +1,4 @@
-from api_url import api_url
+from .api_url import api_url
 from typing import Any, Dict, List, Optional
 import requests
 
