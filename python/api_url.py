@@ -159,4 +159,6 @@ def api_url(
          print("Generated URL:")
          print(url)
     return url 
-              
+
+
+print(api_url(ees_enivronment="dev"))
