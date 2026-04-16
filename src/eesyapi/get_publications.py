@@ -1,7 +1,7 @@
 import requests 
 from typing import Optional, List, Dict, Any 
 
-from api_url import api_url 
+from .api_url import api_url 
 
 def validate_page_size(page_size: Optional[int]):
     if page_size is not None and page_size <=0:

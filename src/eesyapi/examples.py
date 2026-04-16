@@ -1,6 +1,6 @@
 import requests
 from typing import Any, Dict, List, Union 
-from api_url import api_url
+from .api_url import api_url
 
 EXAMPLE_ID_LIST = {
     "attendance": {

@@ -2,7 +2,7 @@ import requests
 import pandas as pd 
 from typing import Optional, Dict, Any, List
 
-from api_url import api_url 
+from .api_url import api_url 
 
 def get_meta_response(
         dataset_id: str,
