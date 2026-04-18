@@ -3,345 +3,12 @@ import pytest
 """
 api_url.py
 
-Url builder for Explore Education Statistics (EES) API 
+Url builder for Explore     Education Statistics (EES) API 
 
 """
 
-from urllib.parse import urlencode
-
-def api_url(
-    endpoint: str = "get-publications",
-    search = None, 
-    publication_id = None, 
-    dataset_id = None, 
-    indicators = None, 
-    time_periods = None, 
-    geographic_levels = None,
-    ees_enivronment=None,
-    locations = None, 
-    filter_items = None, 
-    dataset_version = None, 
-    ees_environment = None, 
-    api_version = None, 
-    page_size = None, 
-    page = None, 
-    verbose = False 
-
-):
-        
-#Default Values
-
-    if ees_environment is None:
-        ees_environment = "prod"
-    
-    if api_version is None:
-           api_version = "1"
-
-#Base URL
-
-    base_urls = {
-        "dev": "https://pp-api.education.gov.uk/statistics-dev/", 
-        "test": "https://pp-api.education.gov.uk/statistics-test/", 
-        "preprod": "https://pp-api.education.gov.uk/statistics-preprod/", 
-        "prod": "https://api.education.gov.uk/statistics/"
-     }
-
-    base = base_urls[ees_environment] + "v" + api_version + "/"
-
-#Get Publications 
-
-    if endpoint == "get-publications":
-         
-         params = {}
-
-         if page_size:
-              params["pageSize"] = page_size
-        
-         if page:
-              params["page"] = page
-
-         if search:
-              params["search"] = search 
-
-         url = base + "publications"
-
-         if params:
-              url += "?" + urlencode(params)
-
-
-# Get Data Catalogue
-
-    elif endpoint == "get-data-catalogue":
-
-         if not publication_id:
-              raise ValueError("publication_id is required")
-
-         params = {}
-
-         if page_size:
-              params["pageSize"] = page_size
-
-         if page:
-              params["page"] = page
-
-         url = base + f"publications/{publication_id}/data-sets"
-
-         if params:
-              url += "?" + urlencode(params) 
-
-
-# Dataset Endpoints     
-
-    else:
-         
-         if not dataset_id:
-              raise ValueError("dataset_id is required")
-         
-         url = base + f"data-sets/{dataset_id}"
-
-         if endpoint == "get-dataset-versions":
-              url += "/versions"
-
-         elif endpoint != "get-summary":
-              
-              if endpoint == "get-meta":
-                   url += "/meta"
-
-              elif endpoint == "get-csv":
-                   url = base + f"data-sets/{dataset_id}/csv"
-
-              else:
-                   url += "/query"
-
-              if dataset_version:
-                   url += f"?dataSetVersion={dataset_version}"
-
-# Get data(filters)
-
-         if endpoint == "get-data":
-              
-              params ={}
-
-              if indicators:
-                   params["indicators"] = ",".join(indicators)
-             
-              if time_periods:
-                   params["timeperiods"] = ",".join(time_periods)
-              
-              if geographic_levels:
-                   params["geographicLevels"] = ",".join(geographic_levels)
-
-              if locations:
-                   params["locations"] = ",".join(locations)
-            
-              if filter_items:
-                   params["filters"] = ",".join(filter_items)
-
-
-# Pagination Logic
-
-              if page and not page_size:
-                   page_size = 1000
-
-              if page_size and not page:
-                   page = 1
-              
-              if page_size:
-                   params["pageSize"] = page_size
-
-              if page:
-                   params["page"] = page
-            
-              if params:
-                   url += "?" + urlencode(params)
-
-# Verbose
-
-    if verbose:
-         print("Generated URL:")
-         print(url)
-    return url 
-              
-
-# Dataset_id = "c62e9901-7b35-7272-9fd1-30ab9a527e10"
-# publication_name = "Key stage 2 attainment"
-
-
-
-# def test_api_url_default_publications():
-#      url = api_url()
-#      assert "https://api.education.gov.uk/statistics/v1/publications" in url 
-
-# def test_api_url_publications_with_params():
-#      url = api_url(
-#           endpoint ="get-publications",
-#           search="schools",
-#           page=2,
-#           page_size=20,
-#      )
-
-#      assert "https://api.education.gov.uk/statistics/v1/publications" in url 
-
-# def test_api_url_requires_publication_id_for_catalogue():
-#      with pytest.raises(ValueError):
-#           api_url(endpoint="get-data-catalogue")
-
-
-# def test_api_url_builds_data_catalogue():
-#      url = api_url(
-#           endpoint="get-data-catalogue",
-#           publication_id=publication_name,
-#           page=1,
-#           page_size=10,
-#      )
-
-#      assert(
-#           f"https://api.education.gov.uk/statistics/v1/publications/"
-#           f"{publication_name}/data-sets"
-#      ) in url 
-#      assert "page=1" in url 
-#      assert "pageSize=10" in url 
-
-# def test_api_url_requires_publication_id_for_catalogue():
-#      with pytest.raises(ValueError):
-#           api_url(endpoint="get-data-catalogue")
-
-# def test_api_url_builds_data_catalogue():
-#      url = api_url(
-#           endpoint = "get-data-catalogue",
-#           publication_id=publication_name,
-#           page=1,
-#           page_size=10,
-#      )
-
-#      assert (
-#           f"https://api.education.gov.uk/statistics/v1/publications/"
-#           f"{publication_name}/data-sets"
-#      ) in url 
-#      assert "page=1" in url 
-#      assert "pageSize=10" in url 
-
-
-# def test_api_url_requires_dataset_id_for_dataset_endpoints():
-#      endpoints = [
-#           "get-dataset-versions",
-#           "get-meta",
-#           "get-summary",
-#           "get-csv",
-#           "get-data",
-
-#      ]
-
-#      for endpoint in endpoints:
-#           with pytest.raises(ValueError):
-#                api_url(endpoint=endpoint)
-
-# def test_api_url_get_meta_real_style():
-#      url = api_url(
-#           endpoint="get-meta",
-#           dataset_id=Dataset_id,
-#      )
-
-#      assert (
-#           f"https://api.education.gov.uk/statistics/v1/data-sets/"
-#           f"{Dataset_id}/meta"
-#      ) in url 
-
-# def test_api_url_gets_summary_real_style():
-#      url = api_url(
-#           endpoint="get-summary",
-#           dataset_id=Dataset_id,
-#      )
-
-#      assert(
-#           f"https://api.education.gov.uk/statistics/v1/data-sets/"
-#           f"{Dataset_id}"
-
-#      ) in url 
-
-#      assert not url.endswith("/meta")
-#      assert not url.endswith("/csv")
-#      assert not url.endswith("/versions")
-
-# def test_api_url_get_csv_real_style():
-#      print('running')
-#      url = api_url(
-#           endpoint="get-csv",
-#           dataset_id=Dataset_id)
-#      print(url)
-#      assert (
-#           f"https://api.education.gov.uk/statistics/v1/data-sets/{Dataset_id}/versions"
-#      ) in url 
-
-# test_api_url_get_csv_real_style()
-
-# def test_api_url_get_data_with_query_params_real_style():
-#      url = api_url(
-#           endpoint="get-data",
-#           dataset_id=Dataset_id,
-#           indicators=["indicator_1", "indicator_2"],
-#           time_periods=["2022", "2023"],
-#           geographic_levels=["national"],
-#           locations=["E92000001"],
-#           filter_items=["gender:male"],
-#           page=3,
-#           page_size=50,
-#      )
-
-#      assert(
-#           f"https://api.educations.gov.uk/statistics/v1/data-sets/"
-#           f"{Dataset_id}/query"
-#      ) in url 
-
-#      assert "page=3" in url 
-#      assert "PageSize=50" in url 
-
-
-# def test_api_url_environment_and_version_dev():
-#      url = api_url(
-#           endpoint="get-publications",
-#           ees_enivronment="dev",
-#           api_version="1",
-#      )
-
-#      assert "https://pp-api.education.gov.uk/statistics-dev/v1/publications" in url 
-
-
-# def test_api_url_environment_and_version_test():
-#      url = api_url(
-#           endpoint="get-publications",
-#           ees_enivronment="test",
-#           api_version="1",
-#      )
-
-#      assert "https://pp-api.education.gov.uk/statistics-test/v1/publications" in url 
-
-# def test_api_url_environment_and_version_preprod():
-#      url = api_url(
-#           endpoint="get-publications",
-#           ees_enivronment="preprod",
-#           api_version="1",
-#      )
-
-#      assert "https://pp-api.education.gov.uk/statistics-preprod/v1/publications" in url 
-
-# def test_api_url_environment_and_version_prod():
-#      url = api_url(
-#           endpoint="get-publications",
-#           ees_enivronment="prod",
-#           api_version="1",
-#      )
-
-#      assert "https://api.education.gov.uk/statistics/v1/publications" in url 
-
-
-
-
-
-
-
 from urllib.parse import urlparse, parse_qs
-
+from api_url import api_url
 
 
 ABSENCE_SESSIONS_DATASET_ID = "a0d20bb7-a919-456c-ae44-83815cc8515a"
@@ -363,307 +30,287 @@ ALEVEL_SUBJ_DATASET_ID = "9a275c77-4325-4ac8-aa9e-b1a2bd3ab63b"
 PUPIL_ABSENCE_PUBLICATION_ID = "8b7474f9-5870-4ecc-7557-08da5f64dcf1"
 
 
-def parse_url(url:str):
-     "return (base_without_query, query_dict) for easy assertions."
-     parsed = urlparse(url)
-     base = parsed.scheme + "://" + parsed.netloc + parsed.path
-     params = parse_qs(parsed.query)
-     return base, params 
+def parse_url(url: str):
+    "return (base_without_query, query_dict) for easy assertions."
+    parsed = urlparse(url)
+    base = parsed.scheme + "://" + parsed.netloc + parsed.path
+    params = parse_qs(parsed.query)
+    return base, params
 
 
 class TestGetPublications:
+    
+    def test_default_url(self):
+         url = api_url()
+         assert url == "https://api.education.gov.uk/statistics/v1/publications"
 
-     def test_default_url(self):
-          url = api_url()
-          assert url == "https://api.education.gov.uk/statistics/v1/publications"
-     
+    def test_with_search(self):
+         url = api_url(search="absence")
+         base, params = parse_url(url)
+         assert base.endswith("/publications")
+         assert params["search"] == ["absence"]
 
-     def test_with_search(self):
-          url = api_url(search="absence")
-          base, params = parse_url(url)
-          assert base.endswith("/publications")
-          assert params["search"] == ["absence"]
-     
-     def test_with_pagination(self):
-          url = api_url(page=2, page_size=5)
-          _, params = parse_url(url)
-          assert params["page"] == ["2"]
-          assert params["pageSize"] == ["5"]
-     
-     def test_dev_environment(self):
-          url = api_url(ees_enivronment="dev")
-          base, _ = parse_url(url)
-          assert base == "https://pp-api.education.gov.uk/statistics-dev/"
-     
-     def test_preprod_environment(self):
-          url = api_url(ees_enivronment="preprod")
-          base, _ = parse_url(url)
-          assert base == "https://pp-api.education.gov.uk/statistics-preprod/"
+    def test_with_pagination(self):
+         url = api_url(page=2, page_size=5)
+         _, params = parse_url(url)
+         assert params["page"] == ["2"]
+         assert params["pageSize"] == ["5"]
+    
+    def test_dev_environment(self):
+        url = api_url(ees_environment="dev")
 
-     def test_test_environment(self):
-          url = api_url(ees_enivronment="test")
-          base, _ = parse_url(url)
-          assert base == "https://pp-api.education.gov.uk/statistics-test/"
-     
-     def test_prod_environment(self):
-          url = api_url(ees_enivronment="prod")
-          base, _ = parse_url(url)
-          assert base == "https://api.education.gov.uk/statistics/"
-     
-     def test_invalid_environment_raises(self):
-          with pytest.raises(ValueError, match="Invalid ees_environment"):
-               api_url(ees_enivronment="staging")
+        base, _ = parse_url(url)
+        assert base == "https://pp-api.education.gov.uk/statistics-dev/v1/publications"
 
-     def test_api_version(self):
+    def test_preprod_environment(self):
+        url = api_url(ees_environment="preprod")
+        base, _ = parse_url(url)
+        assert base == "https://pp-api.education.gov.uk/statistics-preprod/v1/publications"
+    
+    def test_test_environment(self):
+          url = api_url(ees_environment="test")
+          base, _ = parse_url(url)
+          assert base == "https://pp-api.education.gov.uk/statistics-test/v1/publications"
+
+    def test_prod_environment(self):
+          url = api_url(ees_environment="prod")
+          base, _ = parse_url(url)
+          assert base == "https://api.education.gov.uk/statistics/v1/publications"
+     
+    def test_invalid_environment_raises(self):
+          url = api_url(ees_environment="stagging")
+          base, _ = parse_url(url)
+          assert base == "https://api.education.gov.uk/statistics/v1/publications"
+
+    def test_api_version(self):
           url = api_url(api_version="2")
           assert "/v2/" in url 
      
-     def test_no_params_no_query_string(self):
+    def test_no_params_no_query_string(self):
           url = api_url()
           assert "?" not in url 
-     
 
 
 class TestGetDataCatalogue:
+    
+    def test_basic_url(self):
+        url = api_url(
+            endpoint="get-data-catalogue",
+            publication_id=PUPIL_ABSENCE_PUBLICATION_ID)
 
-     def test_basic_url(self):
-          url = api_url(
-               endpoint="get-data-catalogue",
-               publication_id=PUPIL_ABSENCE_PUBLICATION_ID
+        assert f"publications/{PUPIL_ABSENCE_PUBLICATION_ID}/data-sets" in url
 
-          )
+    def test_missing_publication_id_raises(self):
+        with pytest.raises(ValueError, match="publication_id is required"):
+            api_url(endpoint="get-data-catalogue")
 
-          assert f"publications/{PUPIL_ABSENCE_PUBLICATION_ID}/data-sets" in url 
-
-     def test_missing_publication_id_raises(self):
-          with pytest.raises(ValueError, match="publication_id is required"):
-               api_url(endpoint="get-data-catalogue")
-     
-     def test_pagination(self):
-          url = api_url(
-               endpoint="get-data-catalogue",
+    def test_pagination(self):
+        url = api_url(
+            endpoint="get-data-catalogue",
                publication_id=PUPIL_ABSENCE_PUBLICATION_ID,
                page=1,
-               page_size=10
-          )
+               page_size=10)
 
-          _, params = parse_url(url)
-          assert params["page"] == ["1"]
-          assert params["pageSize"] == ["10"]
+        _, params = parse_url(url)
+        assert params["page"] == ["1"]
+        assert params["pageSize"] == ["10"]
 
-     
-     def test_no_extra_params(self):
-          url = api_url(
-               endpoint="get-data-catalogue",
-               publication_id=PUPIL_ABSENCE_PUBLICATION_ID
-          )
 
-          assert "?" not in url
+    def test_no_extra_params(self):
+        url = api_url(
+            endpoint="get-data-catalogue",
+               publication_id=PUPIL_ABSENCE_PUBLICATION_ID)
 
+        assert "?" not in url
 
 
 class TestGetSummary:
-
-     def test_absence_sessions(self):
-          url = api_url(
+    
+    def test_absence_sessions(self):
+        url = api_url(
                endpoint="get-summary",
-               dataset_id=ABSENCE_SESSIONS_DATASET_ID
-          )
+               dataset_id=ABSENCE_SESSIONS_DATASET_ID)
 
-          base, _ = parse_url(url)
-          assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}")
-          assert "?" not in url 
-     
-     def test_persistent_absentees(self):
-          url = api_url(
-               endpoint="get-summary", 
-               dataset_id=PERSISENT_ABSENTEES_DATASET_ID
-          )
+        base, _ = parse_url(url)
+        assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}")
+        assert "?" not in url
 
-          assert f"data-sets/{PERSISENT_ABSENTEES_DATASET_ID}" in url 
-     
-     def test_missing_dataset_id_raises(self):
+    def test_persistent_absentees(self):
+        url = api_url(
+            endpoint="get-summary",
+               dataset_id=PERSISENT_ABSENTEES_DATASET_ID)
+
+        assert f"data-sets/{PERSISENT_ABSENTEES_DATASET_ID}" in url
+
+    
+    def test_missing_dataset_id_raises(self):
           with pytest.raises(ValueError, match="dataset_id is required"):
                api_url(endpoint="get-summary")
 
 
 class TestGetMeta:
-
-     def test_absence_sessions_meta(self):
-          url = api_url(
+    
+    def test_absence_sessions_meta(self):
+        url = api_url(
                endpoint="get-meta",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID
           )
 
-          base, _=parse_url(url)
-          assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}/meta")
-     
+        base, _=parse_url(url)
+        assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}/meta")
 
-     def test_apprenticeships_meta(self):
-          url = api_url(
+
+    def test_apprenticeships_meta(self):
+        url = api_url(
                endpoint="get-meta",
                dataset_id=APPRENTICESHIPS_INYR_DATASET_ID
-          )
-          assert "/meta" in url 
-     
-     def test_meta_with_version(self):
-          url = api_url(
+               )
+        assert "/meta" in url
+
+    def test_meta_with_version(self):
+        url = api_url(
                endpoint="get-meta",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
-               dataset_version="2.0"
-          )
+               dataset_version="2.0")
 
-          _, params = parse_url(url)
-          assert params["dataSetVersion"] == ["2.0"]
-
+        _, params = parse_url(url)
+        assert params["dataSetVersion"] == ["2.0"]
 
 
 class TestGetCsv:
 
-     def test_csv_url_structure(self):
-          url = api_url(
+    def test_csv_url_structure(self):
+        url = api_url(
                endpoint="get-csv",
                dataset_id=ALEVEL_PERF_DATASET_ID
-          )
+               )
 
-          base, _ = parse_url(url)
-          assert base.endswith(f"data-sets/{ALEVEL_PERF_DATASET_ID}/csv")
+        base, _ = parse_url(url)
+        assert base.endswith(f"data-sets/{ALEVEL_PERF_DATASET_ID}/csv")
 
-     def test_csv_with_version(self):
-          url = api_url(
+    def test_csv_with_version(self):
+        url = api_url(
                endpoint="get-csv",
                dataset_id=ALEVEL_PERF_DATASET_ID,
-               dataset_version="1.1"
-          )
+               dataset_version="1.1")
 
-          _, params = parse_url(url)
-          assert params["dataSetVersion"] == ["1.1"]
+        _, params = parse_url(url)
+        assert params["dataSetVersion"] == ["1.1"]
 
 
 class TestGetDatasetVersions:
 
-     def test_version_url(self):
-          url = api_url(
+    def test_version_url(self):
+        url = api_url(
                endpoint = "get-dataset-versions",
-               dataset_id = ABSENCE_SESSIONS_DATASET_ID
-          )
+               dataset_id = ABSENCE_SESSIONS_DATASET_ID)
 
-          base, _=parse_url(url)
-          assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}/versions")
-     
-     def test_alevel_nat_versions(self):
-          url = api_url(
+        base, _=parse_url(url)
+        assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}/versions")
+
+    def test_alevel_nat_versions(self):
+        url = api_url(
                endpoint = "get-dataset-versions",
-               dataset_id=ALEVEL_NAT_PERF_DATASET_ID
-          )
+               dataset_id=ALEVEL_NAT_PERF_DATASET_ID)
 
-          assert "/versions" in url 
+        assert "/versions" in url
 
 class TestGetData:
-
-     def test_basic_get_data(self):
-          url = api_url(
+    
+    def test_basic_get_data(self):
+        url = api_url(
                endpoint="get-data",
-               dataset_id=ABSENCE_SESSIONS_DATASET_ID
-          )
+               dataset_id=ABSENCE_SESSIONS_DATASET_ID)
 
-          base, _ = parse_url(url)
-          assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}/query")
-     
-     def test_indicators(self):
-          url = api_url(
-               endpoint = "get-data",
+        base, _ = parse_url(url)
+        assert base.endswith(f"data-sets/{ABSENCE_SESSIONS_DATASET_ID}/query")
+
+    def test_indicators(self):
+        url = api_url(
+            endpoint = "get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
-               indicators=["number_of_sessions","percentage_of_sessions"]
+               indicators=["number_of_sessions","percentage_of_sessions"])
 
-          )
+        _, params = parse_url(url)
+        assert "number_of_sessions" in params["indicators"][0]
+        assert "percentage_of_sessions" in params["indicators"][0]
 
-          _, params = parse_url(url)
-          assert "number_of_sessions" in params["indicators"][0]
-          assert "percentage_of_sessions" in params["indicators"][0]
-     
-     def test_time_periods(self):
-          url = api_url(
+    def test_time_periods(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
                time_periods=["2022|AY", "2023|AY", "2024|AY"]
           )
 
-          _, params = parse_url(url)
-          assert "2022|AY" in params["timeperiods"][0]
-     
-     def test_geographic_levels(self):
-          url = api_url(
+        _, params = parse_url(url)
+        assert "2022|AY" in params["timeperiods"][0]
+
+    def test_geographic_levels(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
                geographic_levels=["National","Regional","LocalAuthority"]
           )
 
-          _, params = parse_url(url)
+        _, params = parse_url(url)
 
-          assert "National" in params["geographicLevels"][0]
-     
-     def test_filter_items_absence_reason(self):
-          """use real filter from Absence sessions dataset"""
-          url = api_url(
+        assert "National" in params["geographicLevels"][0]
+
+    def test_filter_items_absence_reason(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
                filter_items=["Authorised absence", "Unauthorised absence"]
           )
+        _, params = parse_url(url)
+        assert "Authorised absence" in params["filters"][0]
 
-          _, params = parse_url(url)
-          assert "Authorised absence" in params["filters"][0]
-     
-     def test_locations(self):
-          url = api_url(
+    def test_locations(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=ALEVEL_NAT_PERF_DATASET_ID,
-               locations=["E92000001"]
-          )
+               locations=["E92000001"])
 
-          _, params = parse_url(url)
-          assert "E92000001" in params["locations"][0]
-     
-     def test_pagination_auto_defaults_page_only(self):
-          "page set but no page_size -> page size should default to 1000."
-          url = api_url(
+        _, params = parse_url(url)
+        assert "E92000001" in params["locations"][0]
+
+    def test_pagination_auto_defaults_page_only(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
                page=2
           )
 
-          _, params = parse_url(url)
-          assert params["page"] == ["2"]
-          assert params["pageSize"] == ["1000"]
+        _, params = parse_url(url)
+        assert params["page"] == ["2"]
+        assert params["pageSize"] == ["1000"]
 
-     def test_pagination_auto_defaults_page_size_only(self):
-          "page size set but no page -> page should default to 1"
-          url = api_url(
+    def test_pagination_auto_defaults_page_size_only(self):
+        url = api_url(
                endpoint = "get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
                page_size=500
           )
 
-          _, params = parse_url(url)
-          assert params["pageSize"] == ["500"]
-          assert params["page"] == ["1"]
-     
+        _, params = parse_url(url)
+        assert params["pageSize"] == ["500"]
+        assert params["page"] == ["1"]
 
-     def test_explict_pagination(self):
-          url = api_url(
+
+    def test_explict_pagination(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=APPRENTICESHIPS_FULL_DATASET_ID,
                page=3,
                page_size=200
           )
 
-          _, params = parse_url(url)
-          assert params["page"] == ["3"]
-          assert params["pageSize"] == ["200"]
-     
-     def test_combined_filters_apprenticeships(self):
-          "uses real filters for Apprenticeships in-year dataset"
-          url = api_url(
+        _, params = parse_url(url)
+        assert params["page"] == ["3"]
+        assert params["pageSize"] == ["200"]
+
+    def test_combined_filters_apprenticeships(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=APPRENTICESHIPS_INYR_DATASET_ID,
                indicators=["starts","achievements","participation"],
@@ -672,66 +319,22 @@ class TestGetData:
                time_periods=["2024|AY"]
           )
 
-          _, params = parse_url(url)
-          assert "starts" in params["indicators"][0]
-          assert "National" in params["geographicLevels"][0]
-          assert "Intermediate" in params["filters"][0]
+        _, params = parse_url(url)
+        assert "starts" in params["indicators"][0]
+        assert "National" in params["geographicLevels"][0]
+        assert "Intermediate" in params["filters"][0]
 
-     
-     def test_versions_with_get_data(self):
-          url = api_url(
+
+    def test_versions_with_get_data(self):
+        url = api_url(
                endpoint="get-data",
                dataset_id=ABSENCE_SESSIONS_DATASET_ID,
                dataset_version="3.0"
           )
 
-          _, params = parse_url(url)
-          assert params["dataSetVersion"] == ["3.0"]
-     
-     def test_missing_dataset_id_raises(self):
-          with pytest.raises(ValueError, match="dataset_id is required"):
-               api_url(endpoint="get-data")
-     
+        _, params = parse_url(url)
+        assert params["dataSetVersion"] == ["3.0"]
 
-     
-class TestEnvironment:
-
-     @pytest.mark.parametrize("env, excepted_base", [
-          ("dev", "https://pp-api.education.gov.uk/statistics-dev/"),
-          ("test", "https://pp-api.education.gov.uk/statistics-test/"),
-          ("preprod", "https://pp-api.education.gov.uk/statistics-preprod/"),
-          ("prod", "https://api.education.gov.uk/statistics/"),
-     ])
-
-     def test_all_environments(self, env, excepted_base):
-          url = api_url(ees_enivronment=env)
-          base, _ = parse_url(url)
-          assert base == excepted_base
-     
-     def test_invalid_environment_raises(self):
-          with pytest.raises(ValueError, match="invalid ees_environment"):
-               api_url(ees_enivronment="stagging")
-
-
-class TestVerbose:
-
-     def test_verbose_prints_url(self, capsys):
-          url = api_url(verbose=True)
-          captured = capsys.readouterr()
-          assert "Generated URL:" in captured.out
-          assert url in captured.out 
-     
-     def test_verbose_returns_correct_url(self, capsys):
-          url = api_url(verbose=True)
-          assert url == "https://api.education.gov.uk/statistics/"
-     
-     def test_verbose_dataset_url(self,capsys):
-          url = api_url(
-               endpoint = "get-summary",
-               dataset_id=ABSENCE_SESSIONS_DATASET_ID,
-               verbose = True
-          )
-
-          captured = capsys.readouterr()
-          assert ABSENCE_SESSIONS_DATASET_ID in captured.out
-          assert url is not None
+    def test_missing_dataset_id_raises(self):
+        with pytest.raises(ValueError, match="dataset_id is required"):
+            api_url(endpoint="get-data")
