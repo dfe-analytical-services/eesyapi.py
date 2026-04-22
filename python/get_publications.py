@@ -40,42 +40,42 @@ def get_publications(
     if verbose:
         print(f"GET {url}")
 
-        response = requests.get(url)
+    response = requests.get(url)
 
-        if response.status_code !=200:
+    if response.status_code !=200:
             raise Exception(f"API Error: {response.status_code}")
         
-        data = response.json()
+    data = response.json()
 
-        if page is None:
-            total_pages = data.get("paging", {}).get("totalPages",1)
+    if page is None:
+        total_pages = data.get("paging", {}).get("totalPages",1)
 
-            if total_pages > 1:
-                for p in range(2, total_pages +1):
+        if total_pages > 1:
+            for p in range(2, total_pages +1):
 
-                    url_page = api_url(
-                        endpoint = "get-publications",
-                        search = search, 
-                        ees_environment = ees_environment,
-                        api_version = api_version,
-                        page_size = page_size,
-                        page = p, 
-                        verbose = verbose 
-                    )
+                url_page = api_url(
+                    endpoint = "get-publications",
+                    search = search, 
+                    ees_environment = ees_environment,
+                    api_version = api_version,
+                    page_size = page_size,
+                    page = p, 
+                    verbose = verbose 
+                )
+                if verbose:
+                    print(f"GET page {p}: {url_page}")
 
-                    if verbose:
-                        print(f"GET page {p}: {url_page}")
+                response_page = requests.get(url_page)
 
-                    response_page = requests.get(url_page)
-
-                    if response_page.status_code !=200:
-                        raise Exception(f"API Error: {response_page.status_code}")
+                if response_page.status_code !=200:
+                    raise Exception(f"API Error: {response_page.status_code}")
                     
-                    data_page = response_page.json 
+                data_page = response_page.json()
 
-                    data["results"].extend(data_page.get("results",[]))
+                data["results"].extend(data_page.get("results",[]))
 
     
     warning_max_pages(data)
 
     return data.get("results",[])
+

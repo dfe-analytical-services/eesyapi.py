@@ -1,6 +1,7 @@
 import requests
 from typing import Any, Dict, List, Union 
 from api_url import api_url
+import pandas as pd 
 
 EXAMPLE_ID_LIST = {
     "attendance": {
@@ -91,45 +92,47 @@ EXAMPLE_ID_LIST = {
         },
         "indicator" : "X9fKb",
         "indicators" : ["X9fKb","cg31S"]
-     },
-     "absence": {
-        "dev": {
-            "publication": "d823e4df-626f-4450-9b21-08dc8b95fc02",
-            "dataset": "830f9201-9e11-ad75-8dcd-d2efe2834457",
-            "location_id": "LA|id|ml79K",
-            "location_code": "NAT|code|E92000001",
-            "location_codes": ["REG|code|E12000001","REG|code|E12000002"],
-            "filter": "01tT5",
-            "filter_item": "wEZcb",
-            "indicator": "PbNeb",
-         },
-
-         "test" : {
-             "publication" : "25d0e40b-643a-4f73-3ae5-08dcf1c4d57f",
-             "dataset" : "e1ae9201-2fff-d376-8fa3-bd3c3660d4c8",
-             "location_id": "NAT|id|mRj9K",
-             "location_code" : "NAT|code|E92000001",
-             "filter" : "arLPb",
-             "filter_item" : "VN5XE",
-             "filter_items" : ["VN5XE","PEebW"],
-             "indicator": "dPe0Z",
-             "indicators" : ["OBXCL","7YFXo"]
-
-        },
-
-        "prod" : {
-            "publication" : "9676af6b-d563-41f4-d071-08da8f468680",
-            "dataset" : "55629501-e98b-0c75-adba-f95a0cfbb5e9",
-            "location_id" : "LA|id|it6Xr",
-            "location_code" : "NAT|code|E92000001",
-            "filter": "BT7J3",
-            "filter_item": "oUXmX",
-            "indicator": "uxo41",
-            "indicators": ["uxo4"]
-
-        }
-     }
     }
+},
+
+"absence": {
+    "dev": {
+        "publication": "d823e4df-626f-4450-9b21-08dc8b95fc02",
+        "dataset": "830f9201-9e11-ad75-8dcd-d2efe2834457",
+        "location_id": "LA|id|ml79K",
+        "location_code": "NAT|code|E92000001",
+        "location_codes": ["REG|code|E12000001","REG|code|E12000002"],
+        "filter": "01tT5",
+        "filter_item": "wEZcb",
+        "indicator": "PbNeb",
+     },
+
+     "test" : {
+        "publication" : "25d0e40b-643a-4f73-3ae5-08dcf1c4d57f",
+        "dataset" : "e1ae9201-2fff-d376-8fa3-bd3c3660d4c8",
+        "location_id": "NAT|id|mRj9K",
+        "location_code" : "NAT|code|E92000001",
+        "filter" : "arLPb",
+        "filter_item" : "VN5XE",
+        "filter_items" : ["VN5XE","PEebW"],
+        "indicator": "dPe0Z",
+        "indicators" : ["OBXCL","7YFXo"]
+
+    },
+
+    "prod" : {
+        "publication" : "9676af6b-d563-41f4-d071-08da8f468680",
+        "dataset" : "55629501-e98b-0c75-adba-f95a0cfbb5e9",
+        "location_id" : "LA|id|it6Xr",
+        "location_code" : "NAT|code|E92000001",
+        "filter": "BT7J3",
+        "filter_item": "oUXmX",
+        "indicator": "uxo41",
+        "indicators": ["uxo4"]
+
+    }
+     
+  }
 }
 
 def parse_tojson_params(
@@ -142,7 +145,7 @@ def parse_tojson_params(
     return {
         "indicators":[indicators] if isinstance(indicators, str) else indicators,
         "timePeriods":[time_periods] if isinstance(time_periods, str) else time_periods,
-        "geograhies": geographies,
+        "geographies": geographies,
         "filters" : filter_items
     }
 
@@ -191,7 +194,7 @@ def example_id(
         if l not in group_examples:
             raise ValueError("Non-valid element level received.\n"
                              "should be one of:\n\"" + 
-                             "\", \"".join(group_examples.key()) + "\".")
+                             "\", \"".join(group_examples.keys()) + "\".")
         
 
     if len(levels) > 1:
@@ -245,8 +248,6 @@ def example_json_query(ees_environment: str = "prod"):
             geographies=todf_geographies(example_id("location_codes",group="attendance",ees_environment=ees_environment)),
             filters = example_id("filter_items_short", group="attendance",ees_environment=ees_environment)
     )
-
-import pandas as pd 
 
 def example_geography_query(level: str = "nat_yorks"):
     """

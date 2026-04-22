@@ -146,4 +146,3 @@ def api_url(
             if params:
                 url += "?" + urlencode(params)
     return url
-

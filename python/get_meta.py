@@ -24,7 +24,6 @@ def get_meta_response(
         preview_token=preview_token,
         ees_environment=ees_environment,
         api_version=api_version,
-        parse= True,
         verbose=verbose
     )
 
@@ -43,7 +42,7 @@ def parse_meta_time_periods(api_meta_time_periods):
 
     df = pd.DataFrame(api_meta_time_periods)
 
-    if "code" not in df.colums:
+    if "code" not in df.columns:
         raise ValueError("Code column not found in timePeriods data")
     
     df["code_num"] = df["code"].str.replace(r"[a-zA-Z]", "", regex=True).astype(float)
@@ -131,7 +130,7 @@ def get_meta(
          "locations" : parse_meta_location_ids(response.get("locations", {})),
          "filter_columns" : parse_meta_filter_columns(response.get("filters", [])), 
          "filter_items" : parse_meta_filter_item_ids(response.get("filters", [])),
-         "indicators" : parse_meta_filter_columns(response.get("indicators", ))
+         "indicators" : parse_meta_filter_columns(response.get("indicators",[]))
      }
 
      return meta_data

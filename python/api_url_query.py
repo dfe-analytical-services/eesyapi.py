@@ -1,8 +1,6 @@
 from api_url import api_url
 import requests
 from typing import Dict, Any, List, Optional 
-
-from api_url import api_url 
 from utils import check_response, extract_results
 from convert_api_filter_type import convert_api_filter_type
 
@@ -11,29 +9,50 @@ def build_query_body(
         time_periods: Optional[List[str]] = None, 
         geographic_levels: Optional[List[str]] = None, 
         locations: Optional[List[str]] = None, 
-        filters: Optional[List[Dict[str, Any]]] = None
+        filters: Optional[List[Dict[str, Any]]] = None,
+        page: int = 1,
+        page_size: int =100
 ) -> Dict[str, Any]:
     
  """
- Build request body for EES API query endpoint 
+ Build POST request body for EES API query endpoint 
  """
 
- body = {}
-
- if indicators:
-    body["indicators"] = indicators
-
- if time_periods:
-   body["timePeriods"] = time_periods
-
- if geographic_levels:
-   body["geographicLevels"] = geographic_levels
-
- if locations:
-   body["locations"] = locations 
+ criteria = {}
 
  if filters:
-   body["filters"] = filters 
+   filter_ids = [] 
+   for f in filters:
+     if isinstance(f, dict) and "Values" in f:
+         filter_ids.extend(f["values"])
+     elif isinstance(f, str):
+       filter_ids.append(f)
+   if filter_ids:
+     criteria["filters"] = {"in": filter_ids}
+
+ if geographic_levels:
+    criteria["geographicLevels"] = {"in": geographic_levels}
+ if locations:
+   criteria["locations"] = {"in": locations}
+  
+ if time_periods:
+     parsed =[]
+     for tp in time_periods:
+       if "|" in tp:
+         period, code = tp.split("|", 1)
+         parsed.append({"period": period, "code": code})
+       else:
+            parsed.append(tp)
+     criteria["timePeriods"] = {"in": parsed}
+  
+
+ body = {
+   "criteria": criteria,
+   "indicators": indicators if indicators else[],
+   "page": page,
+   "pageSize": page_size
+
+  }
 
  return body
 
@@ -46,7 +65,7 @@ def query(
     locations: Optional[List[str]] = None, 
     filters: Optional[List[Dict[str, Any]]] = None, 
     dataset_version: Optional[str] = None, 
-    ees_enivronment: str ='prod',
+    ees_environment: str ='prod',
     api_version: str = "1", 
     page_size: int = 100, 
     paginate: bool = True, 
@@ -81,10 +100,10 @@ def query(
 
   while True:
     url = api_url(
-      endpoint = "data",
+      endpoint = "get-data",
       dataset_id = dataset_id,
       dataset_version=dataset_version,
-      ees_environment=ees_enivronment,
+      ees_environment=ees_environment,
       api_version=api_version,
       page=page,
       page_size=page_size

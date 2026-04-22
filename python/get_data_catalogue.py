@@ -2,6 +2,7 @@ from api_url import api_url
 from typing import Any, Dict, List, Optional
 import requests
 
+
 def validate_ees_id(ees_id: str):
     if not ees_id or not isinstance(ees_id, str):
         raise ValueError("Invalid publication_id")
@@ -43,8 +44,7 @@ def get_data_catalogue(
         api_version=api_version,
         page_size=page_size,
         page=page,
-        verbose=verbose
-    )
+        verbose=verbose)
 
 
     if verbose:
@@ -61,30 +61,30 @@ def get_data_catalogue(
     if page is None:
         total_pages = data.get("paging", {}).get("totalPages", 1)
     
-    if total_pages > 1:
-        for p in range(2, total_pages + 1):
+        if total_pages > 1:
+              for p in range(2, total_pages + 1):
 
-            url_page = api_url(
-                endpoint = "get-data-catalogue",
-                publication_id=publication_id,
-                ees_environment=ees_environment,
-                api_version=api_version,
-                page_size=page_size,
-                page=p,
-                verbose=verbose
-            )
+                url_page = api_url(
+                     endpoint = "get-data-catalogue",
+                     publication_id=publication_id,
+                     ees_environment=ees_environment,
+                     api_version=api_version,
+                     page_size=page_size,
+                     page=p,
+                     verbose=verbose
+                )
 
-            if verbose:
-                print(f"GET page {p}: {url_page}")
+                if verbose:
+                     print(f"GET page {p}: {url_page}")
             
-            response_page = requests.get(url_page)
+                response_page = requests.get(url_page)
 
-            if response_page.status_code !=200:
-                raise Exception(F"API Error: {response_page.status_code}")
+                if response_page.status_code !=200:
+                    raise Exception(F"API Error: {response_page.status_code}")
             
-            data_page =  response_page.json()
+                data_page =  response_page.json()
 
-            data["results"].extend(data_page.get("results", []))
+                data["results"].extend(data_page.get("results", []))
 
 
     warning_max_pages(data)
