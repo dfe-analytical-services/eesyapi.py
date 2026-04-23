@@ -10,8 +10,8 @@ def build_query_body(
         geographic_levels: Optional[List[str]] = None, 
         locations: Optional[List[str]] = None, 
         filters: Optional[List[Dict[str, Any]]] = None,
-        page: int = 1,
-        page_size: int =100
+        page: int= 1,
+        page_size: int = 100
 ) -> Dict[str, Any]:
     
  """
@@ -23,7 +23,7 @@ def build_query_body(
  if filters:
    filter_ids = [] 
    for f in filters:
-     if isinstance(f, dict) and "Values" in f:
+     if isinstance(f, dict) and "values" in f:
          filter_ids.extend(f["values"])
      elif isinstance(f, str):
        filter_ids.append(f)
@@ -46,13 +46,11 @@ def build_query_body(
      criteria["timePeriods"] = {"in": parsed}
   
 
- body = {
-   "criteria": criteria,
-   "indicators": indicators if indicators else[],
-   "page": page,
-   "pageSize": page_size
-
-  }
+ body = {"criteria": criteria,
+         "indicators": indicators if indicators else[],
+         "page": page,
+         "pageSize": page_size
+         }
 
  return body
 
@@ -68,7 +66,8 @@ def query(
     ees_environment: str ='prod',
     api_version: str = "1", 
     page_size: int = 100, 
-    paginate: bool = True, 
+    paginate: bool = True,
+    max_pages: int = 10, 
     verbose: bool = False
 ) -> List[Dict[str, Any]]:
   
@@ -87,28 +86,28 @@ def query(
   
   filters = convert_api_filter_type(filters)
 
-  body = build_query_body(
-    indicators=indicators,
-    time_periods=time_periods,
-    geographic_levels=geographic_levels,
-    locations=locations,
-    filters=filters
-  )
-
-  all_results =[]
-  page = 1
-
-  while True:
-    url = api_url(
+  url = api_url(
       endpoint = "get-data",
       dataset_id = dataset_id,
       dataset_version=dataset_version,
       ees_environment=ees_environment,
       api_version=api_version,
-      page=page,
-      page_size=page_size
     )
 
+
+  all_results =[]
+  page = 1
+
+  while True:
+    body = build_query_body(
+    indicators=indicators,
+    time_periods=time_periods,
+    geographic_levels=geographic_levels,
+    locations=locations,
+    filters=filters,
+    page=page,
+    page_size=page_size
+  )
 
     if verbose:
       print(f"[QUERY] Page {page}")
@@ -132,9 +131,14 @@ def query(
     all_results.extend(results)
 
     if not paginate:
-      break 
+      break
 
-    total_results  = data.get("totalResults")
+    if page >= max_pages:
+      if verbose:
+        print(f"[QUERY] max_pages {max_pages} reached - stopping")
+      break
+
+    total_results  = data.get("paging", {}).get("totalResults")
     if total_results is not None and len(all_results) >= total_results:
         if verbose:
           print("[Query] all results fetched")
