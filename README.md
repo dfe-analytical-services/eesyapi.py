@@ -27,3 +27,23 @@ Then run it as normal:
 import eesyapi
 eesyapi.api_url()
 ```
+
+### Running tests
+
+Basic pytest tests have been added to check that some of the main functions run.
+
+If pytest isn't yet installed, open a bash terminal and paste
+
+
+py -m pip install pytest
+
+
+Then run the tests from the project folder:
+
+
+py -m pytest
+
+
+The tests are located in the `tests` folder.
+
+These tests are quite simple and mainly check that functions run and return something. some tests will fail depending on the data returned from the api
