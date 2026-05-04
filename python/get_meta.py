@@ -21,7 +21,6 @@ def get_meta_response(
         endpoint="get-meta",
         dataset_id=dataset_id,
         dataset_version=dataset_version,
-        preview_token=preview_token,
         ees_environment=ees_environment,
         api_version=api_version,
         verbose=verbose
