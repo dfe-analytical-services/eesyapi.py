@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - Restructure_Test
 
 permissions:
   contents: write
