@@ -44,15 +44,24 @@ def parse_meta_time_periods(api_meta_time_periods):
     if "code" not in df.columns:
         raise ValueError("Code column not found in timePeriods data")
     
-    df["code_num"] = df["code"].str.replace(r"[a-zA-Z]", "", regex=True).astype(float)
+    df["code_num"] = pd.to_numeric(
+        df["code"].str.replace(r"[a-zA-Z]", "", regex=True),
+        errors = "coerce"
+    ).fillna(0)
     df = df.sort_values("code_num").drop(columns=["code_num"])
 
     return df
 
 def parse_meta_location_ids(api_meta_locations):
 
-    levels = api_meta_locations["level"]
-    options = api_meta_locations["options"]
+    if not api_meta_locations:
+        return pd.DataFrame
+
+    levels = api_meta_locations["level", []]
+    options = api_meta_locations["options", []]
+
+    if not levels or not options:
+        return pd.DataFrame()
 
     all_rows = []
 
@@ -65,6 +74,9 @@ def parse_meta_location_ids(api_meta_locations):
         df = df.rename(columns={"id": "item_id"})
 
         all_rows.append(df)
+    
+    if not all_rows:
+        return pd.DataFrame()
 
     return pd.concat(all_rows, ignore_index=True)
 
@@ -125,11 +137,11 @@ def get_meta(
      )
 
      meta_data = {
-         "time_periods": parse_meta_time_periods(response.get("timePeriods", [])),
-         "locations" : parse_meta_location_ids(response.get("locations", {})),
-         "filter_columns" : parse_meta_filter_columns(response.get("filters", [])), 
-         "filter_items" : parse_meta_filter_item_ids(response.get("filters", [])),
-         "indicators" : parse_meta_filter_columns(response.get("indicators",[]))
+         "time_periods":    parse_meta_time_periods(response.get("timePeriods", [])),
+         "locations":       parse_meta_location_ids(response.get("locations", {})),
+         "filter_columns":  parse_meta_filter_columns(response.get("filters", [])), 
+         "filter_items":    parse_meta_filter_item_ids(response.get("filters", [])),
+         "indicators":      parse_meta_filter_columns(response.get("indicators",[]))
      }
 
      return meta_data
