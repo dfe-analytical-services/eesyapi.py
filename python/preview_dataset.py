@@ -20,11 +20,11 @@ def preview_dataset(
     if dataset_version is not None:
         warnings.warn(
             "Support for dataset_version is not yet available for downloading "
-            "full data sets, Returning latest available version of data set."
+            "full data sets. Returning latest available version of data set."
         )
     
     if not isinstance(verbose, bool):
-        raise ValueError("verbose must be a boolen value, either True or False")
+        raise ValueError("verbose must be a boolean value, either True or False")
     
     if n_max != float("inf"):
         if not isinstance(n_max, int) or n_max <= 0:
@@ -57,7 +57,7 @@ def preview_dataset(
 
     
     content = response.text
-    df = pd.read_csv(StringIO(content))
+    df = pd.read_csv(StringIO(content), low_memory=False)
 
     if n_max != float("inf"):
         df = df.head(int(n_max))

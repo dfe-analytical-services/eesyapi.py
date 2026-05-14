@@ -254,4 +254,10 @@ class TestValidateDatasetVersion:
         with pytest.raises(ValueError):
             validate_dataset_version("v1.0")
     
-    def te
+    def test_bool_raises(self):
+        with pytest.raises(ValueError):
+            validate_dataset_version(True)
+    
+    def test_letters_raises(self):
+        with pytest.raises(ValueError):
+            validate_dataset_version("abc")

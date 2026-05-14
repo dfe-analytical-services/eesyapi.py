@@ -149,13 +149,18 @@ def validate_ees_id(
     
     if element_id is None:
         raise ValueError(
-            "The variable" + level + "_id is None, "
+            "The variable " + level + "_id is None, "
             "please provide a valid " + level + "_id."
         )
     
-    if not isinstance(element_id, (str, list)) or element_id == "":
+    if not isinstance(element_id, (str, list)) and element_id == "":
         raise ValueError(
-            "Invalid " + level + "_id provided. Must be a non-empty string or list."
+            "Invalid " + level + "_id provided. Must be a non-empty string."
+        )
+    
+    if not isinstance(element_id, (str, list)):
+        raise ValueError(
+            "Invalid " + level + "_id provided. Must be a string or list."
         )
 
     if level == "location":
@@ -219,12 +224,12 @@ def validate_page_size(page_size: Optional[Union[int, float]], min_size: int = 1
         If page_size is not numeric or outside allowed range.
     """
     if page_size is not None:
+        valid = False
+
         if isinstance(page_size, bool):
             valid = False
         elif isinstance(page_size, (int, float)):
             valid = min_size <= page_size <= max_size
-        else:
-            valid = False
         
         if not valid:
             raise ValueError(
@@ -255,22 +260,19 @@ def validate_dataset_version(dataset_version: Optional[Union[str, int, float]]) 
         If dataset_version is not in valid format.
     """
     if dataset_version is not None:
-        if isinstance(dataset_version, bool):
+         valid = False
+         if isinstance(dataset_version, bool):
             valid = False
-        
-        elif isinstance(dataset_version, str):
-            pattern = r"^\*$|^(\d+)(\.(\d+|\*)){0, 2}$"
+         elif isinstance(dataset_version, str):
+            pattern = r"^\*$|^\d+(\.\d+)*(\.\*)?$"
             valid = bool(re.match(pattern, dataset_version))
-        elif isinstance(dataset_version, (int, float)):
+         elif isinstance(dataset_version, (int, float)):
             valid = True
         
-        else:
-            valid = False
-
-    if not valid:
-        raise ValueError(
-            "The dataset version must be a character string in the format"
-            "'major.minor.patch', optionally using '*' wildcards "
-            "(e.g. '8.2.3','2.3.*', '*')."
-        )
+         if not valid:
+            raise ValueError(
+                "The dataset version must be a character string in the format"
+                "'major.minor.patch', optionally using '*' wildcards "
+                "(e.g. '8.2.3','2.3.*', '8.*', '*')."
+            )
 
