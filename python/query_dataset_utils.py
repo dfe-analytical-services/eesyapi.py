@@ -23,7 +23,7 @@ def todf_geographies(
                 df["location_level"] = split[0]
                 df["location_id_type"] = split[1]
                 df["location_id"] = split[2]
-                df = df.drop(colums=["locations"])
+                df = df.drop(columns=["locations"])
             else:
                 raise ValueError("Invalid locations format in DataFrame")
         

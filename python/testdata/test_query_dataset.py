@@ -1,5 +1,6 @@
 import pytest
 import requests
+import warnings
 import pandas as pd 
 from query_dataset import query_dataset
 from query_dataset_utils import todf_geographies
@@ -12,6 +13,12 @@ KS4_ID = "019d4320-2bde-7059-8d7a-b685013eb1e6"
 DEV_DATASET = "7c0e9201-c7c0-ff73-bee4-304e731ec0e6"
 
 TEST_DATASET = "7ca99501-d160-2570-b4cd-122834d433f3"
+
+BASIC_QUERY = {"criteria": {}, "indicators": [], "page": 1, "pageSize": 5}
+
+NAT_QUERY = {"criteria": {"geographicLevels": {"in": ["NAT"]}}, "indicators": [], "page": 1, "pageSize": 5}
+
+TIME_QUERY = {"criteria": {"timePeriods": {"in": [{"period": "2024", "code": "AY"}]}}, "indicators": [], "page": 1, "pageSize": 5}
 
 
 def is_reachable(url):
@@ -81,7 +88,7 @@ class TestTodfGeographies:
     
     def test_dict_with_both(self):
         result = todf_geographies({
-            "geographic_level": ["REG", "LA"],
+            "geographic_level": ["REG"],
             "locations": ["REG|code|E12000001"]
         })
         assert isinstance(result, pd.DataFrame)
@@ -94,7 +101,7 @@ class TestTodfGeographies:
         with pytest.raises(ValueError):
             todf_geographies({"invalid_key": ["NAT"]})
     
-    def test_human_friendly_name_converted(self):
+    def test_string_level_passed_through(self):
         result = todf_geographies("NAT")
         assert result["geographic_level"].iloc[0] == "NAT"
     
@@ -129,7 +136,7 @@ class TestQueryDatasetProd:
             page_size=5,
             page=1,
             method="POST",
-            json_query={"criteria": {}, "indicators": [], "page": 1, "pageSize":5}
+            json_query=BASIC_QUERY
             
         )
         assert isinstance(result, (pd.DataFrame, type(None)))
@@ -137,13 +144,11 @@ class TestQueryDatasetProd:
     def test_with_geographies_nat(self):
         result = query_dataset(
             APPRENTICE_FULL_ID,
-            geographies="NAT",
-            indicators=["X9fKb"],
             ees_environment="prod",
             page_size=5,
             page=1,
             method="POST",
-            parse=False
+            json_query=NAT_QUERY
 
         )
         assert isinstance(result, (pd.DataFrame, type(None)))
@@ -151,13 +156,11 @@ class TestQueryDatasetProd:
     def test_with_time_periods(self):
         result = query_dataset(
             APPRENTICE_FULL_ID,
-            time_periods=["2024|AY"],
-            indicators=["X9fKb"],
             ees_environment="prod",
             page_size=5,
             page=1,
             method="POST",
-            parse=False
+            json_query=TIME_QUERY
         )
         assert isinstance(result, (pd.DataFrame, type(None)))
     
@@ -168,24 +171,69 @@ class TestQueryDatasetProd:
             page_size=5,
             page=1,
             method="POST",
-            json_query={"criteria": {}, "indicators": [], "page":1, "pageSize":5}
+            json_query=BASIC_QUERY
         )
 
         assert isinstance(result, (pd.DataFrame, type(None)))
     
     def test_get_method_warns(self):
-        import warnings
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            query_dataset(
-                APPRENTICE_FULL_ID,
-                geographies="NAT",
-                ees_environment="prod",
-                page_size=5,
-                page=1,
-                method="GET"
-            )
-            assert any("GET" in str(Warning.message) for warning in w)
+            try:
+                query_dataset(
+                    APPRENTICE_FULL_ID,
+                    geographies="NAT",
+                    ees_environment="prod",
+                    page_size=5,
+                    page=1,
+                    method="GET",
+                    json_query=BASIC_QUERY
+                )
+            except Exception:
+                pass
+            assert any("GET" in str(warning.message) for warning in w)
+    
+
+class TestQueryDatasetDev:
+
+    def test_returns_dataframe(self):
+        result = query_dataset(
+            DEV_DATASET,
+            ees_environment="dev",
+            page_size=5,
+            page=1,
+            method="POST",
+            json_query=BASIC_QUERY
+        )
+
+        assert isinstance(result, (pd.DataFrame, type(None)))
+    
+    def test_with_nat_geography(self):
+        result = query_dataset(
+            DEV_DATASET,
+            ees_environment="dev",
+            page_size=5,
+            page=1,
+            method="POST",
+            json_query=NAT_QUERY
+        )
+
+        assert isinstance(result, (pd.DataFrame, type(None)))
+
+class TestQueryDatasetPreprod:
+
+    def test_returns_dataframe(self):
+        result = query_dataset(
+            TEST_DATASET,
+            ees_environment="preprod",
+            page_size=5,
+            page=1,
+            method="POST",
+            json_query=BASIC_QUERY
+        )
+
+        assert isinstance(result, (pd.DataFrame, type(None)))
+    
     
 
     

@@ -91,7 +91,7 @@ def parse_sqids_locations(
 ) -> pd.DataFrame:
 
 
-    lookup = meta.got("locations", pd.DataFrame())
+    lookup = meta.get("locations", pd.DataFrame())
 
     if isinstance(lookup, pd.DataFrame) and not lookup.empty:
         lookup = lookup[
@@ -121,7 +121,7 @@ def parse_sqids_locations(
                 if col != "item_id"
             }
 
-            level_lookup = level_loopup.rename(columns=rename_map)
+            level_lookup = level_lookup.rename(columns=rename_map)
             result = result.merge(level_lookup, on="item_id", how="left")
         
         result = result.drop(columns=["item_id"], errors="ignore")
@@ -176,7 +176,7 @@ def parse_sqids_filters(
 
         ][["item_id", "item_label"]].copy() if isinstance(filter_items, pd.DataFrame) else pd.DataFrame()
 
-        if not lookup.memory:
+        if not lookup.empty:
             lookup = lookup.rename(columns={"item_label": col_name, "item_id": column_sqid})
             result = result.merge(lookup, on=column_sqid, how="left")
             result = result.drop(columns=[column_sqid])

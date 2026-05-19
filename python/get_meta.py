@@ -39,15 +39,19 @@ def get_meta_response(
 
 def parse_meta_time_periods(api_meta_time_periods):
 
+    if not api_meta_time_periods:
+        return pd.DataFrame()
+    
     df = pd.DataFrame(api_meta_time_periods)
 
-    if "code" not in df.columns:
-        raise ValueError("Code column not found in timePeriods data")
+    if df.empty or "code" not in df.columns:
+        return df
     
     df["code_num"] = pd.to_numeric(
         df["code"].str.replace(r"[a-zA-Z]", "", regex=True),
-        errors = "coerce"
+        errors="coerce"
     ).fillna(0)
+
     df = df.sort_values("code_num").drop(columns=["code_num"])
 
     return df
@@ -57,30 +61,45 @@ def parse_meta_location_ids(api_meta_locations):
     if not api_meta_locations:
         return pd.DataFrame
 
-    levels = api_meta_locations["level", []]
-    options = api_meta_locations["options", []]
-
-    if not levels or not options:
-        return pd.DataFrame()
-
     all_rows = []
 
-    for i in range(len(levels)):
-        df = pd.DataFrame(options[i])
+    if isinstance(api_meta_locations, list):
+        for item in api_meta_locations:
+            if not isinstance(item, dict):
+                continue
+            level = item.get("level", {})
+            options = item.get("options", [])
+            if not options:
+                continue
+            df = pd.DataFrame(options)
+            df["geographic_levels_code"] = level.get("code", "")
+            df["geographic_level"] = level.get("label", "")
+            df = df.rename(columns={"id": "item_id"})
+            all_rows.append(df)
 
-        df["geographic_levels_code"] = levels[i]["code"]
-        df["geographic_level"] = levels[i]["label"]
-
-        df = df.rename(columns={"id": "item_id"})
-
-        all_rows.append(df)
+    
+    elif isinstance(api_meta_locations, dict):
+        levels = api_meta_locations.get("level", [])
+        options = api_meta_locations.get("options", [])
+        if levels and options:
+            for i in range(len(levels)):
+                if i >= len(options):
+                    break 
+                df = pd.DataFrame(options[i])
+                df["geographic_levels_code"] = levels[i].get("code", "")
+                df["geographic_level"] = levels[i].get("label", "")
+                df = df.rename(columns={"id": "item_id"})
+                all_rows.append(df)
     
     if not all_rows:
         return pd.DataFrame()
-
+    
     return pd.concat(all_rows, ignore_index=True)
 
 def parse_meta_filter_columns(api_meta_filters):
+
+    if not api_meta_filters:
+        return pd.DataFrame(columns=["col_id", "col_name", "label"])
 
     return pd.DataFrame({
         "col_id": [f["id"] for f in api_meta_filters], 
@@ -90,6 +109,9 @@ def parse_meta_filter_columns(api_meta_filters):
 
 
 def parse_meta_filter_item_ids(api_meta_filters):
+
+    if not api_meta_filters:
+        return pd.DataFrame()
 
     rows = []
 
@@ -108,6 +130,9 @@ def parse_meta_filter_item_ids(api_meta_filters):
                 "isAggregate": opt.get("isAggregate")
 
             })
+    
+    if not rows:
+        return pd.DataFrame()
     
     df = pd.DataFrame(rows)
 
@@ -138,7 +163,7 @@ def get_meta(
 
      meta_data = {
          "time_periods":    parse_meta_time_periods(response.get("timePeriods", [])),
-         "locations":       parse_meta_location_ids(response.get("locations", {})),
+         "locations":       parse_meta_location_ids(response.get("locations", [])),
          "filter_columns":  parse_meta_filter_columns(response.get("filters", [])), 
          "filter_items":    parse_meta_filter_item_ids(response.get("filters", [])),
          "indicators":      parse_meta_filter_columns(response.get("indicators",[]))
