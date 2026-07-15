@@ -44,6 +44,8 @@ Then run the tests from the project folder:
 py -m pytest
 
 
+To test get_publications, in a Bash terminal, paste : pytest tests/test_get_publications.py -v
+
 The tests are located in the `tests` folder.
 
 These tests are quite simple and mainly check that functions run and return something. some tests will fail depending on the data returned from the api

@@ -4,7 +4,7 @@ import eesyapi
 from eesyapi.api_url_pages import api_url_pages
 from eesyapi.api_url_query import build_query_body, query
 from eesyapi.convert_api_filter_type import convert_api_filter_type
-from eesyapi.get_dataset_versions import get_dataset_versions
+
 
 print("basic function checks")
 print("---------------------")
