@@ -6,7 +6,7 @@ Url builder for Explore     Education Statistics (EES) API
 """
 
 from urllib.parse import urlparse, parse_qs
-from eesyapi import api_url
+from src.eesyapi.api_url import api_url
 import pytest
 
 
