@@ -53,7 +53,7 @@ def get_publications(
         page: Optional[int] = None, 
         verbose: bool = False
 ) -> List[Dict]:
-     """
+    """
     Fetch publication records from the Explore Education Statistics API.
 
     If a specific page is provided, only that page is returned.
@@ -73,14 +73,22 @@ def get_publications(
 
     Raises:
         Exception: If the API request returns a non-200 status code.
+
+        
+    Example:
+        ```python
+        get_publications()
+        get_publications(search = "attendance")
+        ```
+
     """
     # Validate page_size before creating the API request.
-     validate_page_size(page_size)
+    validate_page_size(page_size)
 
-     validate_environment(ees_environment)
+    validate_environment(ees_environment)
 
    # Build the API URL for the first request.
-     url = api_url(
+    url = api_url(
         endpoint="get-publications",
         search = search, 
         ees_environment=ees_environment,
@@ -90,17 +98,17 @@ def get_publications(
         verbose=verbose
     )
     # Print the API URL when verbose mode is enabled.
-     if verbose:
+    if verbose:
         print(f"GET {url}")
    # Send GET request to the API.
-     response = requests.get(url)
+    response = requests.get(url)
   # Raise an error if the API response is not successful.
-     if response.status_code !=200:
+    if response.status_code !=200:
             raise Exception(f"API Error: {response.status_code}")
     # Convert API response to JSON.   
-     data = response.json()
+    data = response.json()
    # If page is not provided, fetch all pages automatically.
-     if page is None:
+    if page is None:
         total_pages = data.get("paging", {}).get("totalPages",1)
        # If there is more than one page, fetch pages 2 to total_pages.
         if total_pages > 1:
@@ -131,7 +139,7 @@ def get_publications(
                 data["results"].extend(data_page.get("results",[]))
 
     # Warn user if requested page is beyond available pages.
-     warning_max_pages(data)
+    warning_max_pages(data)
     # Return only the publication records.
-     return data.get("results",[])
+    return data.get("results",[])
 
