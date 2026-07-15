@@ -1,7 +1,5 @@
 # Reference
 
-This page is generated from the Python source code and docstrings.
-
 # API URL
 
 ::: eesyapi.api_url.api_url
