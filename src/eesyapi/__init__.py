@@ -11,5 +11,6 @@ Python SDK for the Explore Education Statistics (EES) API
 from eesyapi.get_publications import (
     get_publications,
     validate_page_size,
+    validate_environment,
     warning_max_pages,
 )

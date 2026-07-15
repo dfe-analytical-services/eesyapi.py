@@ -1,3 +1,4 @@
+from dataclasses import fields
 import requests 
 from typing import Optional, List, Dict, Any 
 
@@ -35,6 +36,15 @@ def warning_max_pages(response: Dict[str, Any]):
         if current_pages > total_pages:
             print("Warning: Requested page exceeds total available pages")
 
+def validate_environment(ees_environment: Optional[str]):
+    """
+    Validate the API environment.
+    """
+    if ees_environment is not None and ees_environment not in ["dev", "test", "preprod", "prod"]:
+        raise ValueError(
+            "ees_environment must be one of the following: dev, test, preprod or prod"
+        )
+
 def get_publications(
         search: Optional[str] = None, 
         ees_environment: Optional[str] = None, 
@@ -52,7 +62,7 @@ def get_publications(
 
     Args:
         search: Optional search keyword for filtering publications.
-        ees_environment: API environment, such as dev, test, or prod.
+        ees_environment: API environment, such as dev, test, preprod or prod.
         api_version: API version to use.
         page_size: Number of records to return per page.
         page: Specific page number to fetch. If None, all pages are fetched.
@@ -66,6 +76,8 @@ def get_publications(
     """
     # Validate page_size before creating the API request.
      validate_page_size(page_size)
+
+     validate_environment(ees_environment)
 
    # Build the API URL for the first request.
      url = api_url(

@@ -1,6 +1,11 @@
 import pytest
 import requests
-from eesyapi import get_publications, validate_page_size, warning_max_pages
+from eesyapi import (
+    get_publications,
+    validate_page_size,
+    validate_environment,
+    warning_max_pages,
+)
 
 
 EARLY_YEARS_PUB_ID = "fcda2962-82a6-4052-afa2-ea398c53c85f"  # Early yeras foundation stage
@@ -51,6 +56,34 @@ class TestValidation:
 
     def test_large_passes(self):
         validate_page_size(1000)
+
+class TestEnvironmentValidation:
+
+    def test_none_passes(self):
+        validate_environment(None)
+
+    def test_dev_passes(self):
+        validate_environment("dev")
+
+    def test_test_passes(self):
+        validate_environment("test")
+
+    def test_preprod_passes(self):
+        validate_environment("preprod")
+
+    def test_prod_passes(self):
+        validate_environment("prod")
+
+    def test_invalid_fails(self):
+        with pytest.raises(ValueError, match="ees_environment must be one of the following: dev, test, preprod or prod"):
+            validate_environment("pvh")
+
+    def test_invalid_environment_raises(self):
+        with pytest.raises(
+            ValueError,
+            match="ees_environment must be one of the following"
+        ):
+            validate_environment("production")
 
 class TestWarningMaxPages:
 
