@@ -2,18 +2,10 @@
 
 This page is generated from the Python source code and docstrings.
 
-## API URL
+# API URL
 
-::: eesyapi.api_url
+::: eesyapi.api_url.api_url
 
-## API URL pages
+## Get publications 
 
-::: eesyapi.api_url_pages
-
-## API URL query
-
-::: eesyapi.api_url_query
-
-## Utilities
-
-::: eesyapi.utils
+::: eesyapi.get_publications.get_publications
