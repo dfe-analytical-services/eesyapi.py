@@ -1,12 +1,12 @@
 import pytest
 import requests
-from src.eesyapi.get_publications import (
+from eesyapi.get_publications import (
     get_publications,
     validate_page_size,
     warning_max_pages,
 )
 
-from src.eesyapi.get_publications import validate_environment
+from eesyapi.get_publications import validate_environment
 
 
 EARLY_YEARS_PUB_ID = "fcda2962-82a6-4052-afa2-ea398c53c85f"  # Early yeras foundation stage
