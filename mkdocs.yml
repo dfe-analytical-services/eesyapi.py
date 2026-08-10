@@ -2,7 +2,7 @@ site_name: eesyapi.py
 site_description: Python documentation for the eesyapi package
 
 theme:
-  name: material
+  name: bootstrap4
 
 nav:
   - Home: index.md
