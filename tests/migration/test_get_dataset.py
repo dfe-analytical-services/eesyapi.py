@@ -117,7 +117,7 @@ class TestGetDatasetSummary:
         }
         response = Mock(status_code=200)
         response.json.return_value = summary
-        with patch("eesyapi.get_dataset.requests.get", return_value=response) as get:
+        with patch.object(requests, "get", return_value=response) as get:
             result = get_dataset(APPRENTICE_FULL_ID, **kwargs)
 
         assert result == [summary]
@@ -127,7 +127,7 @@ class TestGetDatasetSummary:
 
     def test_failed_summary_request_raises(self):
         response = Mock(status_code=404)
-        with patch("eesyapi.get_dataset.requests.get", return_value=response):
+        with patch.object(requests, "get", return_value=response):
             with pytest.raises(Exception, match="API Error: 404"):
                 get_dataset(APPRENTICE_FULL_ID)
         response.json.assert_not_called()
