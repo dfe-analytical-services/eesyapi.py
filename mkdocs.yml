@@ -1,0 +1,22 @@
+site_name: eesyapi.py
+site_description: Python documentation for the eesyapi package
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - Reference: reference.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_signature_annotations: true
+            separate_signature: true

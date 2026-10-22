@@ -1,0 +1,40 @@
+[project]
+name = "eesyapi"
+version = "0.1.0"
+description = "Python package for retrieving education data from the UK Department for Education's Explore Education Statistics public API"
+requires-python = ">=3.9"
+
+authors = [
+    { name = "Yashaswini Dhanamjaya", email = "yashaswini7733@gmail.com" },
+    { name = "Jobe Ballentine", email = "Jobe.BALLENTINE@EDUCATION.GOV.UK" },
+    { name = "Rich Bielby", email = "Richard.BIELBY@education.gov.uk" }
+]
+
+dependencies = [
+    "requests",
+    "pandas",
+]
+
+[project.urls]
+Homepage = "https://dfe-analytical-services.github.io/eesyapi.py/"
+Source = "https://github.com/dfe-analytical-services/eesyapi.py"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["eesyapi*"]
+namespaces = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
