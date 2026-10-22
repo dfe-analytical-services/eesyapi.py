@@ -208,14 +208,12 @@ class TestGetDataCatalogueProd:
         )
         assert len(results) <= 3
     
-    def test_invalid_publication_id_raises(self):
-        with pytest.raises(Exception):
-            get_data_catalogue(
-                publication_id="00000000-0000-0000-0000-000000000000",
-                ees_environment="prod"
-
-            )
-            assert results == []
+    def test_unknown_publication_returns_empty_list(self):
+        results = get_data_catalogue(
+            publication_id="00000000-0000-0000-0000-000000000000",
+            ees_environment="prod"
+        )
+        assert results == []
     
     def test_empty_publication_id_raises(self):
         with pytest.raises(ValueError):

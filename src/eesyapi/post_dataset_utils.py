@@ -308,7 +308,10 @@ def parse_tojson_geographies(
         )
 
         # Build location filter for this row
-        loc_parts = "".join(loc_parts)
+        loc_parts = parse_tojson_location(
+            pd.DataFrame([row]), include_comma=bool(eq_part)
+        )
+        loc_str = "".join(loc_parts)
         # Combine level and location with "and" so both must match
         rows.append(
             '         {\n          "and": [\n'
