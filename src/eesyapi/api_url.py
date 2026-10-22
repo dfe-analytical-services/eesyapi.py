@@ -1,191 +1,215 @@
 """
 api_url.py
 
-Url builder for Explore Education Statistics (EES) API 
+Url builder for Explore Education Statistics (EES) API.
+
+This module constructs the correct API URL for each endpoint type.
+handling environment selection, versioning and query parameter encoding.
 
 """
 
 from urllib.parse import urlencode
-from typing import Optional, List, Dict, Any 
+from typing import Optional
 
 def api_url(
     endpoint: str = "get-publications",
-    search: Optional[str] = None, 
-    publication_id: Optional[str] = None, 
-    dataset_id: Optional[str] = None, 
-    indicators: Optional[list] = None, 
-    time_periods: Optional[list] = None, 
+    search: Optional[str] = None,
+    publication_id: Optional[str] = None,
+    dataset_id: Optional[str] = None,
+    indicators: Optional[list] = None,
+    time_periods: Optional[list] = None,
     geographic_levels: Optional[list] = None,
-    locations: Optional[list] = None, 
-    filter_items: Optional[list] = None, 
-    dataset_version: Optional[str] = None, 
-    ees_environment: Optional[str] = None, 
-    api_version: Optional[str] = None, 
-    page_size: Optional[int] = None, 
-    page: Optional[int] = None, 
-    verbose: bool = False 
-    ) -> List[Dict]:
-     """
-    Fetch publication records from the Explore Education Statistics API.
+    locations: Optional[list] = None,
+    filter_items: Optional[list] = None,
+    dataset_version: Optional[str] = None,
+    ees_environment: Optional[str] = None,
+    api_version: Optional[str] = None,
+    page_size: Optional[int] = None,
+    page: Optional[int] = None,
+    verbose: bool = False
+    ) -> str:
+    """
+    Build and return a URL for connecting to the EES API.
 
-    If a specific page is provided, only that page is returned.
-    If page is None, the function fetches all available pages and combines
-    the results into one list.
+    The URL structure depends on the endpoint chosen:
+    -get-publications  -> /publications
+    -get-data-catalogue -> /publications/{id}/data-sets
+    -get-dataset-versions -> /data-sets/{id}/versions
+    -get-summary          ->/data-sets/{id}
+    -get-meta             ->/data-sets/{id}/meta
+    -get-csv              ->/data-sets/{id}/csv
+    -get-data / post-data ->/data-sets/{id}/query
+    """
+    
+    # Default to the production environment.
 
-    Args:
-          search: Optional search keyword for filtering publications.
-          publication_id: Publication ID key 
-          dataset_id: Data set ID key
-          indicators: Indicators for data set query 
-          time_periods: Time periods for data set query
-          geographic_levels: Geographic levels for data set query
-          locations: Locations for data set query
-          filter_items: Filter items for data set query
-          dataset_version: Dataset version
-          ees_environment: API environment, such as dev, test, preprod or prod.
-          api_version: API version to use.
-          page_size: Number of records to return per page.
-          page: Specific page number to fetch. If None, all pages are fetched.
-          verbose: If True, prints the API URLs being requested.
-
-    Returns:
-        str: The API URL for the requested endpoint.
-
-    Example:
-        ```python
-        api_url()
-        ```
-
-    """     
-#Default Values
-
-     if ees_environment is None:
+    if ees_environment is None:
         ees_environment = "prod"
     
-     if api_version is None:
-           api_version = "1"
+    #Default API version to "1" if not provided
 
-#Base URL
+    if api_version is None:
+        api_version = "1"
 
-     _base_urls = {
-        "dev": "https://pp-api.education.gov.uk/statistics-dev/", 
-        "test": "https://pp-api.education.gov.uk/statistics-test/", 
-        "preprod": "https://pp-api.education.gov.uk/statistics-preprod/", 
-        "prod": "https://api.education.gov.uk/statistics/"
-     }
+    # Base URLs for each environment
+    # dev/test/preprod require DFE VPN access
 
-     base = _base_urls[ees_environment] + "v" + api_version + "/"
+    base_urls = {
+        "dev": "https://pp-api.education.gov.uk/statistics-dev/",
+        "test": "https://pp-api.education.gov.uk/statistics-test/",
+        "preprod": "https://pp-api.education.gov.uk/statistics-preprod/",
+        "prod": "https://api.education.gov.uk/statistics/",
+    }
 
-#Get Publications 
+    # Combine base URL with API version e.g.., "https://api.education.gov.uk/statistics/v1/"
 
-     if endpoint == "get-publications":
-         
-         params = {}
+    endpoint_base_version  = base_urls[ees_environment] + "v" + api_version + "/"
 
-         if page_size:
-              params["pageSize"] = page_size
+    # Keep base URL reference (unused but kept for potential future use)
+
+    base = base_urls[ees_environment]
+
+    #Build URL based on endpoint type
+
+    if endpoint == "get-publications":
+        #Publications list endpoint - supports pagination and search filtering 
+
+        params = {}
+
+        if page_size:
+            params["pageSize"] = page_size  # Number of results per page
+
+        if page:
+            params["page"] = page  # Page number to retrieve
+
+        if search:
+            params["search"] = search   # Filter publications by title/summary
         
-         if page:
-              params["page"] = page
+        # Base publications URL 
 
-         if search:
-              params["search"] = search 
+        url = endpoint_base_version + "publications"
 
-         url = base + "publications"
+        # Append query params if any were provided
 
-         if params:
-              url += "?" + urlencode(params)
+        if params:
+            url += "?" + urlencode(params)
 
+    # Get Data Catalogue
 
-# Get Data Catalogue
+    # Returns all API datasets within a given publication
 
-     elif endpoint == "get-data-catalogue":
+    elif endpoint == "get-data-catalogue":
 
-         if not publication_id:
-              raise ValueError("publication_id is required")
+        # publication_id is mandatory for this endpoint
 
-         params = {}
+        if not publication_id:
+            raise ValueError("publication_id is required")
 
-         if page_size:
-              params["pageSize"] = page_size
+        params = {}
 
-         if page:
-              params["page"] = page
+        if page_size:
+            params["pageSize"] = page_size
 
-         url = base + f"publications/{publication_id}/data-sets"
+        if page:
+            params["page"] = page
+        
+        #URL pattern: /publications/{publication_id}/data-sets
 
-         if params:
-              url += "?" + urlencode(params) 
+        url = endpoint_base_version + f"publications/{publication_id}/data-sets"
 
+        if params:
+            url += "?" + urlencode(params)
 
-# Dataset Endpoints     
+    # Dataset Endpoints
+    # All remaining endpoints require a dataset_id
 
-     else:
-         
-         if not dataset_id:
-              raise ValueError("dataset_id is required")
-         
-         url = base + f"data-sets/{dataset_id}"
+    else:
 
-         if endpoint == "get-dataset-versions":
-              url += "/versions"
+        # dataset_id is mandatory for all dataset-level endpoints
+        if not dataset_id:
+            raise ValueError("dataset_id is required")
+        
+        # Start with the base dataset URL
 
-         elif endpoint != "get-summary":
-              
-              if endpoint == "get-meta":
-                   url += "/meta"
+        url = endpoint_base_version + f"data-sets/{dataset_id}"
 
-              elif endpoint == "get-csv":
-                   url = base + f"data-sets/{dataset_id}/csv"
+        if endpoint == "get-dataset-versions":
+            # Returns all available versions of a dataset
+            url += "/versions"
 
-              else:
-                   url += "/query"
+        elif endpoint != "get-summary":
+            # get-summary uses the base dataset URL with no suffix
 
-              if dataset_version:
-                   url += f"?dataSetVersion={dataset_version}"
+            if endpoint == "get-meta":
+                # Returns metadata: filters, indicators, time periods, locations
+                url += "/meta"
 
-# Get data(filters)
+            elif endpoint == "get-csv":
+                # Returns the full dataset as a downloadable CSV file
+                url = endpoint_base_version + f"data-sets/{dataset_id}/csv"
 
-         if endpoint == "get-data":
-              
-              params ={}
+            else:
+                # get-data and post-data both use the /query suffix
+                url += "/query"
 
-              if indicators:
-                   params["indicators"] = ",".join(indicators)
-             
-              if time_periods:
-                   params["timeperiods"] = ",".join(time_periods)
-              
-              if geographic_levels:
-                   params["geographicLevels"] = ",".join(geographic_levels)
+            # Append dataset versions as query param if provided
+            if dataset_version:
+                url += f"?dataSetVersion={dataset_version}"
 
-              if locations:
-                   params["locations"] = ",".join(locations)
+        # Get data endpoint - append filter params to URL query string 
+        # Note: POST data endpoint uses a JSON body instead (not build here)
+
+        if endpoint == "get-data":
+
+            params = {}
+
+            # Add indicator sqids as comma-separated list
+
+            if indicators:
+                params["indicators"] = ",".join(indicators)
             
-              if filter_items:
-                   params["filters"] = ",".join(filter_items)
+            # Add time period filters e.g.., "2024|AY, 2023|AY"
 
+            if time_periods:
+                params["timeperiods"] = ",".join(time_periods)
 
-# Pagination Logic
+            # Add geographic level filters e.g.., "NAT, REG"
 
-              if page and not page_size:
-                   page_size = 1000
-
-              if page_size and not page:
-                   page = 1
-              
-              if page_size:
-                   params["pageSize"] = page_size
-
-              if page:
-                   params["page"] = page
+            if geographic_levels:
+                params["geographicLevels"] = ",".join(geographic_levels)
             
-              if params:
-                   url += "?" + urlencode(params)
+            # Add locations filters e.g.., "NAT|code|E92000001"
 
-# Verbose
+            if locations:
+                params["locations"] = ",".join(locations)
+            
+            # Add filter item sqids
 
-     if verbose:
-         print("Generated URL:")
-         print(url)
-     return url 
+            if filter_items:
+                params["filters"] = ",".join(filter_items)
+
+            # Pagination Logic
+            #If only one of page/page_size is provided, default the other
+
+            if page and not page_size:
+                page_size = 1000   #Default page size if page given but no size
+
+            if page_size and not page:
+                page = 1           # Default to page 1 if size given but no page
+
+            if page_size:
+                params["pageSize"] = page_size
+
+            if page:
+                params["page"] = page
+            
+            # Append all GET params to the URL
+
+            if params:
+                url += "?" + urlencode(params)
+                
+    if verbose:
+        print("Generated URL:")
+        print(url)
+
+    return url

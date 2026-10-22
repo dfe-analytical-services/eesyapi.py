@@ -28,7 +28,7 @@ def validate_ees_filter_type(filter_type):
 def convert_api_filter_type(filter_type):
     mapping ={
         "time_periods": "timePeriods",
-        "geographics_levels": "geographicLevels", 
+        "geographic_levels": "geographicLevels", 
         "locations": "locations", 
         "filter_items": "filters"
     }
